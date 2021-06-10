@@ -8,7 +8,7 @@ I have successfully installed MacOS Catalina 10.15.4 on my i9-10900k running on 
 
 You can find my EFI folder in this repository.
 
-**Current Bootloader: OpenCore 0.6.4**
+**Current Bootloader: OpenCore 0.6.7**
 
 ## YouTube Video to this build ## 
 
@@ -23,14 +23,14 @@ https://youtu.be/szOofRy7uBc
 	- 2.5Gbit Ethernet: Intel I225-V
 	- Two USB-C/Thunderbolt 3 ports
 - RAM: 64GB G.Skill Trident Z 3600Mhz CL18
-- GPU: ~~ASRock Phantom Gaming AMD Radeon VII~~ Saphire Pulse 5700 XT
+- GPU: Formerly Radeon VII, 5700XT. Now RadeonPro W5500 (highly recommended) in an eGPU case (Razer Core) via TB3, but on my other configuration based on my AsRock Phantom Gaming TB3-ITX.  
 - Wifi/BT: MQUPIN fenvi T919 Wireless Card with BCM94360CD
 
 # Working
 - [x] **Tested with macOS Catalina 10.15.6 and macOS Big Sur**
 - [x] **Wifi and Bluetooth** (via BCM94360CD using a MQUPIN fenvi T919 Wireless Card). Replacing the onboard Intel WiFi-card doesn't work. See details below.
-- [x] **Audio**: Realtek ALC1220-VB (AppleALC.kext, layout-id=~~7~~ 28, ~~device-id=0xA170~~, FakeID.kext, FakePCIID_Intel_HDMI_Audio.kext)
-- [x] **USB**, all ports except the USB 2.0 on the rear panel labeled "BIOS". Disabled this due to the 15 port limit.
+- [x] **Audio**: Realtek ALC1220-VB (AppleALC.kext, layout-id=7,FakeID.kext, FakePCIID_Intel_HDMI_Audio.kext)
+- [x] **USB**, all ports.
 - [x] **Thunderbolt 3** including Hot-plug
 - [x] **1Gbit Ethernet (Intel I219-V)**
 - [x] **2.5Gbit Ethernet (Intel I225-V)**
@@ -41,25 +41,7 @@ https://youtu.be/szOofRy7uBc
 - [x] **Restart**
 
 # Not working so far
-- ~~[ ] **iGPU UHD630 HDMI-Output**: You cannot use the iGPU to drive your display. So far it is only working for GPU-acceleration like Intel QuickSync technology. Your help is appreciated here :).~~
 - Netflix and Prime in Safari with iMac20,x based configs.
-
-# Benchmarks
-
-OC: 5.2Ghz All-Core@1.31V, no Power Limit
-
-### Geekbench
-My Geekbench Profile: https://browser.geekbench.com/user/218488
-
-![Geekbench Score with OC](Benchmarks/Geekbench.png)
-
-### Cinebench
-
-Cinebench R20 (with OC): 6857 points.
-
-You can see my "old" Threadripper 1950x with OC to 4.0Ghz All-Core above(7916 points). The stock 1950x below (6670 points).
-
-![Cinebench R20 Score with OC](Benchmarks/CinebenchR20.png)
 
 # Details
 
@@ -133,9 +115,9 @@ In addition, I set the following settings in Hackintool. You can edit them by cl
 
 ## USB
 
-I use USBInjectAll.kext and created my own SSDT-EC-USBX.aml and SSDT-UIAC.aml using Hackintool.
+After using USBInjectAll.kext with 3 different variations of USB-Port configurations, I switched to USBPorts.kext (created with Hackintool) and only offer one USB-port configuration from now on. All ports are enabled in this configuration.
 
-All ports are enabled, except for the USB 2.0 port that is labeled "BIOS" and intended to be used to flash the BIOS. I had to disable this to stay within the 15 port USB limit. And I don't need this port as much as the faster ones. BIOS flashing will work anyways, because this is done prior the Bootloader config.
+If you want to use the other configurations, use one of my older releases (prior to v4.5). Here is the documentation:
 
 [Alternative Port Configurations](USB-Port-Configuration.md)
 
@@ -228,7 +210,7 @@ I needed this to get Audio working:
 - AppleALC.kext
 - FakeID.kext
 - FakePCIID_Intel_HDMI_Audio.kext
-- layout-id=~~7~~ 28
+- layout-id=7
 - ~~device-id=0xA170~~
 
 The layout-id and the device-id is injected via the device properties.
@@ -240,7 +222,7 @@ The audio device has the PCI-Address PciRoot(0x0)/Pci(0x1F,0x3).
 	<key>hda-gfx</key>
 	<string>onboard-1</string>
 	<key>layout-id</key>
-	<integer>28</integer>
+	<integer>7</integer>
 	</dict>
 ```
 
@@ -267,10 +249,12 @@ Then start Bluetooth Explorer App, select Tools/HCI Controller Selector. Then yo
 
 ## Thunderbolt 3 Support
 
-To get mac-like Thunderbolt 3 support you will need to:
-1) set the BIOS settings properly, 
-2) create your own SSDT for Thunderbolt 3 Hotplug and 
-3) need to flash your Thunderbolt 3 chip with a modified firmware. To flash your Thunderbolt 3 chip, you will need an EEPROM Flasher and another PC/Mac or something like a Rasperry Pi. 
+To get fully working Mac-like Thunderbolt 3 support, you need
+1) to set the BIOS settings properly
+2) to flash your TB3 chip
+3) SSDT-DTGP.aml and SSDT-TB3HP.aml (which you should generate on your own here: https://hackindrom.zapto.org)
+
+Some devices might work without it, even hotplugging. Others won't. If you have issues with your TB3 device and don't want to flash your TB3 chip, you can try to disable SSDT-DTGP.aml and SSDT-TB3HP.aml. Then hotplug doesn't work, but the device might at least work when it is connected on boot.
 
 Flashing a modified firmware will activate the Thunderbolt Bus. Without flashing the TB3-chip with a modified firmware, you might have issues with Hotplugging some TB3 devices. E.g. I couldn't get hotplug working on my TB3 eGPU case (Razer Core X). I could only get it working when it was connected while booting macOS.
 
